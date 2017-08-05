@@ -1,0 +1,61 @@
+Identify Fraud from Enron Email
+
+1.	Summarize for us the goal of this project and how machine learning is useful in trying to accomplish it. As part of your answer, give some background on the dataset and how it can be used to answer the project question. Were there any outliers in the data when you got it, and how did you handle those?  [relevant rubric items: “data exploration”, “outlier investigation”]
+
+The goal of this project is to find Enron Employees who may have committed fraud through analyzing their information or features such as salary, bonus, email contacts and so on in the public Enron financial and email dataset. In this process, machine learning can be used to train the data, make predictions and recognize the abnormal data and judge whether the person with certain information is the people of interest(POI).  
+The dataset contains information of 146 people. For each people, the dataset contains 21 features, including salary, to_messages, and so on, even though some information of some people is not available and marked as “NaN”. Among those features, some can be intuitively very important in identifying frauds, such as salary, total_payments, bonus, from_poi_to_this_person, etc. There are some outliers we can find when we plot the data. Yet some outliers may contain the key information that belong to the poi so we cannot just remove all of them. When we look at the persons’ names in the dataset, we can notice a name “Total” which sounds not like a person. If we check the information of “TOTAL”, we find the numbers extremely large and looks like a sum of all people’s information. Besides, it contains no email or message information, very unlike a person, so we will remove it. 
+
+2.	What features did you end up using in your POI identifier, and what selection process did you use to pick them? Did you have to do any scaling? Why or why not? As part of the assignment, you should attempt to engineer your own feature that does not come ready-made in the dataset -- explain what feature you tried to make, and the rationale behind it. (You do not necessarily have to use it in the final analysis, only engineer and test it.) In your feature selection step, if you used an algorithm like a decision tree, please also give the feature importances of the features that you use, and if you used an automated feature selection function like SelectKBest, please report the feature scores and reasons for your choice of parameter values.  [relevant rubric items: “create new features”, “intelligently select features”, “properly scale features”]
+When selecting the features, I used all features and I also created two new features ['to_poi_percentage', 'from_poi_percentage'] . Next step, I used a decision tree to find the most important features. When I put all features available in the feature list, I only got “from_this_person_to_poi” as the important feature, with importance of 1.0. so I decided to reduce the number of features. I used feature scaling because the numbers in the features have total different scale. To make things easy, I used a pipeline to implement scaling, PCA, and classifier. 
+Feature importances:
+ Salary:0 0.0
+to_messages: 0.0757862826828
+deferral_payments: 0.0
+total_payments: 0.0
+loan_advances: 0.0
+bonus: 0.0
+restricted_stock_deferred: 0.0
+deferred_income: 0.220426513942
+total_stock_value: 0.0
+expenses: 0.136188597727
+from_poi_to_this_person: 0.0736811081639
+exercised_stock_options: 0.105863661155
+from_messages: 0.0757862826828
+from_this_person_to_poi: 0.0
+long_term_incentive: 0.0
+shared_receipt_with_poi: 0.0114676611954
+restricted_stock: 0.132625994695
+director_fees: 0.0
+to_poi_percentage: 0.168173897756
+from_poi_percentage: 0.0
+
+
+
+
+3.	What algorithm did you end up using? What other one(s) did you try? How did model performance differ between algorithms?  [relevant rubric item: “pick an algorithm”]
+I end up using Naïve Bayes as the classifier. 
+I first used feature scaling, KBest, PCA, and SVM in a pipeline. I got the not very satisfying performance below:
+ Accuracy: 0.80407	Precision: 0.25985	Recall: 0.25400	F1: 0.25689	F2: 0.25515
+I then used feature scaling, KBest , and SVM in a pipeline
+Accuracy: 0.84707	Precision: 0.31439	Recall: 0.12450	F1: 0.17837	F2: 0.14161
+Finally I changed SVM into Naïve Bayes and got:
+Accuracy: 0.80687	Precision: 0.30972	Recall: 0.36500	F1: 0.33509	F2: 0.35242
+As we can see, the precision and recall both got above 0.30. The first case, we got precision and recall above 0.25. For the second, we have a higher precision score but a lower recall score. 
+4.	What does it mean to tune the parameters of an algorithm, and what can happen if you don’t do this well?  How did you tune the parameters of your particular algorithm? What parameters did you tune? (Some algorithms do not have parameters that you need to tune -- if this is the case for the one you picked, identify and briefly explain how you would have done it for the model that was not your final choice or a different model that does utilize parameter tuning, e.g. a decision tree classifier).  [relevant rubric items: “discuss parameter tuning”, “tune the algorithm”]
+Tuning the parameters of an algorithm ensures that we got a best performance of an algorithm. If I did not do this well, the performance might not be as good for any selector or classifier. I tuned the parameters using GridSearchCV. I did not change the parameter of my Naïve Bayes classifier but I tuned PCA’s n_components among [2, 4, 6, 8], and the value of k in SelectKBest among [8, 10, 14, 16, 18].
+5.	What is validation, and what’s a classic mistake you can make if you do it wrong? How did you validate your analysis?  [relevant rubric items: “discuss validation”, “validation strategy”]
+Validation is to test the algorithm’s result on a different subset from the training subset. I used train_test_split to separate the data. If I did it wrong, I could overfit the data and reduce the accuracy of prediction. I used features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size=0.3, random_state=42), which means I select 30% of my data in the testing set with a random_state of 42. 
+In addition, I used StratifiedShuffleSplit to make sure that the olds are made by preserving the percentage of samples for each class.
+6.	Give at least 2 evaluation metrics and your average performance for each of them.  Explain an interpretation of your metrics that says something human-understandable about your algorithm’s performance. [relevant rubric item: “usage of evaluation metrics”]
+
+The first evaluation metric is Precision, and its performance in my final algorithm is 0.30972. It means that the ability of the algorithm is 0.30972 that if samples are recognized as positive, they are really positive samples. The higher the number, the better the algorithm is. 
+
+The second evaluation metric is Recall, and its performance in my final algorithm is 0.36500. It means that the ability of the algorithm is 0.36500 that if samples are positive, they can be recognized as positive samples. The higher the number, the better the algorithm is. 
+
+
+
+Reference
+Discussion board in Udacity:
+https://discussions.udacity.com/t/how-to-use-pipeline-for-feature-scalling/164178/9
+sklearn webpages:
+ http://lijiancheng0614.github.io/scikit-learn/modules/classes.html#module-sklearn.cross_validation
